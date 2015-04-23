@@ -118,10 +118,10 @@ public class TLSApplicaton extends Application {
         return null;
     }
 
-    public SSLSocketFactory getIssuerSSLSocketFactory() {
-        VeriSignTrustManager issuerTrustManager = new VeriSignTrustManager();
+    public SSLSocketFactory getVeriSignSSLSocketFactory() {
+        VeriSignTrustManager veriSignTrustManager = new VeriSignTrustManager();
         TrustManager[] tms = new TrustManager[1];
-        tms[0] = issuerTrustManager;
+        tms[0] = veriSignTrustManager;
 
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");

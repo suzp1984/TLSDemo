@@ -66,7 +66,7 @@ public class VeriSignTrustManager implements X509TrustManager {
         try {
             cf = CertificateFactory.getInstance("X509");
             mCert = (X509Certificate) cf.generateCertificate(input);
-            Log.e(TAG, mCert.toString());
+            // Log.e(TAG, mCert.toString());
 
         } catch (CertificateException e) {
             e.printStackTrace();

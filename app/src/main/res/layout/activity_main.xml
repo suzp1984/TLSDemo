@@ -9,6 +9,9 @@
               android:orientation="vertical"
               tools:context=".MainActivity">
 
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+            android:text="@string/choose_url"/>
     <Spinner
             android:id="@+id/sp_urls"
             android:layout_width="wrap_content"
@@ -18,48 +21,44 @@
 
     </Spinner>
 
-    <LinearLayout
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+            android:text="@string/choose_certs"/>
+
+    <Spinner
+            android:id="@+id/sp_certs"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:prompt="@string/choose_certs"
+            android:drawSelectorOnTop="true">
+
+    </Spinner>
+
+    <LinearLayout
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
         <Button
-                android:layout_width="wrap_content"
+                android:id="@+id/btn_url_connection"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/iboxpay_urlcon"
-                android:id="@+id/btn_iboxpay_urlcon"/>
+                android:layout_weight="1"
+                android:text="@string/url_connection"/>
 
         <Button
-                android:id="@+id/btn_selfsigned"
-                android:layout_width="wrap_content"
+                android:id="@+id/btn_http_client"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/selfsign_owncloud"/>
+                android:layout_weight="1"
+                android:text="@string/http_client"/>
 
     </LinearLayout>
 
-    <LinearLayout android:layout_width="wrap_content"
-                  android:layout_height="wrap_content">
-        <Button
-                android:id="@+id/btn_urlconnection_personalsign"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/urlconn_personal_trust"/>
 
-        <Button
-                android:id="@+id/btn_owncloud_with_iboxpay_cert"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/owncloud_iboxpay_sign"/>
-    </LinearLayout>
-
-
-    <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-        <Button
-                android:id="@+id/btn_iboxpay_verisign"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/urlconn_verisign"/>
-    </LinearLayout>
+    <TextView
+            android:id="@+id/tv_msg_board"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:scrollbars="horizontal" />
 
 </LinearLayout>

@@ -10,4 +10,8 @@
     <string name="owncloud_iboxpay_sign">owncloud_iboxpay_sign</string>
     
     <string name="choose_url">choose a URL</string>
+    <string name="choose_certs">choose a cert</string>
+
+    <string name="url_connection">Url Connection</string>
+    <string name="http_client">Http Client</string>
 </resources>

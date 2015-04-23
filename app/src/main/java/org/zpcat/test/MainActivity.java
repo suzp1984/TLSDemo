@@ -1,5 +1,6 @@
 package org.zpcat.test;
 
+import org.zpcat.test.network.HttpClientRequest;
 import org.zpcat.test.network.ReqCallback;
 import org.zpcat.test.network.UrlConnectionRequst;
 
@@ -14,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import javax.net.ssl.SSLSocketFactory;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -25,11 +27,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private ArrayAdapter<CharSequence> mUrlAdapater;
     private String mUrl;
 
-    private Button mIboxpayUrlBtn;
-    private Button mSelfSignedBtn;
-    private Button mUrlConnectinSelfSign;
-    private Button mUrlConnectionVeriSign;
-    private Button mOwnCloudIboxpaySign;
+    private Spinner mCertsSpinner;
+    private ArrayAdapter<CharSequence> mCertsAdapater;
+    private String mCert;
+
+    private Button mUrlConnectionBtn;
+    private Button mHttpClientBtn;
 
     private ReqCallback mUrlConnectionCb = new ReqCallback() {
         @Override
@@ -56,8 +59,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position,
                             long id) {
-                        CharSequence chars = mUrlAdapater.getItem(position);
-                        mUrl = chars.toString();
+                        /*CharSequence chars = mUrlAdapater.getItem(position);
+                        mUrl = chars.toString();*/
                     }
 
                     @Override
@@ -67,20 +70,35 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
         );
 
-        mIboxpayUrlBtn = (Button) findViewById(R.id.btn_iboxpay_urlcon);
-        mIboxpayUrlBtn.setOnClickListener(this);
+        mCertsSpinner = (Spinner) findViewById(R.id.sp_certs);
+        mCertsAdapater = ArrayAdapter.createFromResource(this,
+                R.array.certs, android.R.layout.simple_spinner_item);
+        mCertsAdapater.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mCertsSpinner.setAdapter(mCertsAdapater);
+        mCertsSpinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
 
-        mSelfSignedBtn = (Button) findViewById(R.id.btn_selfsigned);
-        mSelfSignedBtn.setOnClickListener(this);
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position,
+                            long id) {
 
-        mUrlConnectinSelfSign = (Button) findViewById(R.id.btn_urlconnection_personalsign);
-        mUrlConnectinSelfSign.setOnClickListener(this);
+                    }
 
-        mUrlConnectionVeriSign = (Button) findViewById(R.id.btn_iboxpay_verisign);
-        mUrlConnectionVeriSign.setOnClickListener(this);
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
 
-        mOwnCloudIboxpaySign = (Button) findViewById(R.id.btn_owncloud_with_iboxpay_cert);
-        mOwnCloudIboxpaySign.setOnClickListener(this);
+                    }
+                }
+        );
+
+        CharSequence selectedItem = (CharSequence) mUrlsSpinner.getSelectedItem();
+        Log.e(TAG, selectedItem.toString());
+
+        mUrlConnectionBtn = (Button) findViewById(R.id.btn_url_connection);
+        mHttpClientBtn = (Button) findViewById(R.id.btn_http_client);
+
+        mUrlConnectionBtn.setOnClickListener(this);
+        mHttpClientBtn.setOnClickListener(this);
     }
 
     @Override
@@ -107,34 +125,52 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        SSLSocketFactory sslSocketFactory = getCurrentSSLSocketFactory();
+        String url = ((CharSequence) mUrlsSpinner.getSelectedItem()).toString();
+
         switch (v.getId()) {
-            case R.id.btn_iboxpay_urlcon:
-                new UrlConnectionRequst().request(IBOXPAY_LOGIN,
-                        ((TLSApplicaton)getApplication()).getDefaultSSLSocketFactory(),
+            case R.id.btn_url_connection:
+                new UrlConnectionRequst().request(url, sslSocketFactory,
                         null, mUrlConnectionCb);
                 break;
-            case R.id.btn_selfsigned:
-                new UrlConnectionRequst().request(SELF_SIGN_OWN_CLOUD,
-                        ((TLSApplicaton)getApplication()).getDefaultSSLSocketFactory(),
-                        null, mUrlConnectionCb);
-                break;
-            case R.id.btn_urlconnection_personalsign:
-                new UrlConnectionRequst().request(IBOXPAY_LOGIN,
-                        ((TLSApplicaton)getApplication()).getIboxpaySSLSocketFactory(),
-                        null, mUrlConnectionCb);
-                break;
-            case R.id.btn_iboxpay_verisign:
-                new UrlConnectionRequst().request(IBOXPAY_LOGIN,
-                        ((TLSApplicaton)getApplication()).getIssuerSSLSocketFactory(),
-                        null, mUrlConnectionCb);
-                break;
-            case R.id.btn_owncloud_with_iboxpay_cert:
-                new UrlConnectionRequst().request(SELF_SIGN_OWN_CLOUD,
-                        ((TLSApplicaton)getApplication()).getIboxpaySSLSocketFactory(),
+            case R.id.btn_http_client:
+                new HttpClientRequest().request(url, sslSocketFactory,
                         null, mUrlConnectionCb);
                 break;
             default:
                 break;
         }
+    }
+
+    private SSLSocketFactory getCurrentSSLSocketFactory() {
+        int i = mCertsSpinner.getSelectedItemPosition();
+        SSLSocketFactory sslSocketFactory;
+        switch (i) {
+            case 0:
+                sslSocketFactory = null;
+                Log.e(TAG, "0");
+                break;
+            case 1:
+                sslSocketFactory = ((TLSApplicaton)getApplication())
+                        .getDefaultSSLSocketFactory();
+                Log.e(TAG, "1");
+                break;
+            case 2:
+                sslSocketFactory = ((TLSApplicaton)getApplication())
+                        .getIboxpaySSLSocketFactory();
+                Log.e(TAG, "2");
+                break;
+            case 3:
+                sslSocketFactory = ((TLSApplicaton)getApplication())
+                        .getVeriSignSSLSocketFactory();
+                Log.e(TAG, "3");
+                break;
+            default:
+                sslSocketFactory = null;
+                Log.e(TAG, "null");
+                break;
+        }
+
+        return sslSocketFactory;
     }
 }
