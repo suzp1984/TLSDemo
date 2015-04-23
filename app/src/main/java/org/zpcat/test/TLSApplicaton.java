@@ -3,6 +3,7 @@
  */
 package org.zpcat.test;
 
+import org.zpcat.test.certs.GitIboxpayTrustManager;
 import org.zpcat.test.certs.IboxpayTrustManager;
 import org.zpcat.test.certs.VeriSignTrustManager;
 
@@ -122,6 +123,24 @@ public class TLSApplicaton extends Application {
         VeriSignTrustManager veriSignTrustManager = new VeriSignTrustManager();
         TrustManager[] tms = new TrustManager[1];
         tms[0] = veriSignTrustManager;
+
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tms, null);
+            return sslContext.getSocketFactory();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public SSLSocketFactory getGitIboxpaySSLSocketFactory() {
+        GitIboxpayTrustManager gitIboxpayTrustManager = new GitIboxpayTrustManager();
+        TrustManager[] tms = new TrustManager[1];
+        tms[0] = gitIboxpayTrustManager;
 
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");

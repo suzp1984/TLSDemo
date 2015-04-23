@@ -13,7 +13,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
 /**
@@ -58,6 +60,12 @@ public class UrlConnectionRequst implements AsyncNetRequest {
                 if ("https".equalsIgnoreCase(url.getProtocol()) && mSSLSocketFactory != null) {
                     Log.e(TAG, "Set sslSocketFactory.");
                     ((HttpsURLConnection) httpConn).setSSLSocketFactory(mSSLSocketFactory);
+                    ((HttpsURLConnection) httpConn).setHostnameVerifier(new HostnameVerifier() {
+                        @Override
+                        public boolean verify(String hostname, SSLSession session) {
+                            return true;
+                        }
+                    });
                 }
 
                 httpConn.connect();

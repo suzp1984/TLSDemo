@@ -11,5 +11,6 @@
         <item>default ssl socket factory</item>
         <item>iboxpay root certificate</item>
         <item>VeriSign certificate</item>
+        <item>git.iboxpay.com Self Signed</item>
     </string-array>
 </resources>

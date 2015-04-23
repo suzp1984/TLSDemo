@@ -165,6 +165,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         .getVeriSignSSLSocketFactory();
                 Log.e(TAG, "3");
                 break;
+            case 4:
+                sslSocketFactory = ((TLSApplicaton)getApplication())
+                        .getGitIboxpaySSLSocketFactory();
+                Log.e(TAG, "4");
+                break;
             default:
                 sslSocketFactory = null;
                 Log.e(TAG, "null");
