@@ -3,4 +3,11 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="iboxpay_urlcon">iboxpay urlconn</string>
+    <string name="selfsign_owncloud">selfsigned owncloud</string>
+    <string name="urlconn_personal_trust">urlconnection selfsign</string>
+    <string name="urlconn_verisign">UrlConnection VeriSign</string>
+    <string name="owncloud_iboxpay_sign">owncloud_iboxpay_sign</string>
+    
+    <string name="choose_url">choose a URL</string>
 </resources>

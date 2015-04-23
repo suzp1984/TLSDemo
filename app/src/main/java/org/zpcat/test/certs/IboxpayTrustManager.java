@@ -1,10 +1,14 @@
-package org.zpcat.test;
+package org.zpcat.test.certs;
 
 import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -14,9 +18,9 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Created by jacobsu on 4/22/15.
  */
-public class PersonalTrustManager implements X509TrustManager {
+public class IboxpayTrustManager implements X509TrustManager {
 
-    private final String TAG = "TAG";
+    private final String TAG = "TLSdemo";
 
     private X509Certificate mCert;
     private String mPEMCert = "-----BEGIN CERTIFICATE-----\n" +
@@ -55,7 +59,7 @@ public class PersonalTrustManager implements X509TrustManager {
             "rPDw2HHTe8/I\n" +
             "-----END CERTIFICATE-----";
 
-    public PersonalTrustManager() {
+    public IboxpayTrustManager() {
         CertificateFactory cf = null;
         InputStream input =
                 new ByteArrayInputStream(mPEMCert.getBytes(StandardCharsets.UTF_8));
@@ -63,7 +67,7 @@ public class PersonalTrustManager implements X509TrustManager {
         try {
             cf = CertificateFactory.getInstance("X509");
             mCert = (X509Certificate) cf.generateCertificate(input);
-            Log.e(TAG, mCert.toString());
+            // Log.e(TAG, mCert.toString());
 
         } catch (CertificateException e) {
             e.printStackTrace();
@@ -77,7 +81,29 @@ public class PersonalTrustManager implements X509TrustManager {
 
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        Log.e(TAG, "check server trusted: auth type - " + authType);
+        boolean ok = false;
 
+        for(X509Certificate cert : chain) {
+            Log.e(TAG, "sigAlgName: " + cert.getSigAlgName() + "; SigAlgOID: " + cert.getSigAlgOID());
+            try {
+                cert.verify(mCert.getPublicKey());
+                ok = true;
+                break;
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (NoSuchProviderException e) {
+                e.printStackTrace();
+            } catch (SignatureException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (!ok) {
+            throw new CertificateException();
+        }
     }
 
     @Override

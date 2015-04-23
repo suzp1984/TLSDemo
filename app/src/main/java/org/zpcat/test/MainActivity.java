@@ -1,82 +1,58 @@
 package org.zpcat.test;
 
+import org.zpcat.test.network.ReqCallback;
+import org.zpcat.test.network.UrlConnectionRequst;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import android.view.View;
+import android.widget.Button;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener {
 
-    private final String TAG = "SSLTest";
+    private final String TAG = "TLSdemo";
+    private final String IBOXPAY_LOGIN = "https://www.iboxpay.com/cashbox/login.htm";
+    private final String SELF_SIGN_OWN_CLOUD = "https://172.30.60.165/owncloud/";
+
+    private Button mIboxpayUrlBtn;
+    private Button mSelfSignedBtn;
+    private Button mUrlConnectinSelfSign;
+    private Button mUrlConnectionVeriSign;
+    private Button mOwnCloudIboxpaySign;
+
+    private ReqCallback mUrlConnectionCb = new ReqCallback() {
+        @Override
+        public void onResult(String result) {
+            Log.e(TAG, "-----------");
+            if (result != null) {
+                Log.e(TAG, result);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mIboxpayUrlBtn = (Button) findViewById(R.id.btn_iboxpay_urlcon);
+        mIboxpayUrlBtn.setOnClickListener(this);
 
-        try {
-            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-            Log.e(TAG, "TrustManagerFacotry default algorithm: " + tmfAlgorithm);
+        mSelfSignedBtn = (Button) findViewById(R.id.btn_selfsigned);
+        mSelfSignedBtn.setOnClickListener(this);
 
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-            tmf.init((KeyStore) null);
-            TrustManager[] tms = tmf.getTrustManagers();
+        mUrlConnectinSelfSign = (Button) findViewById(R.id.btn_urlconnection_personalsign);
+        mUrlConnectinSelfSign.setOnClickListener(this);
 
-            for (TrustManager tm : tms) {
-                if (tm instanceof X509TrustManager) {
-                    X509Certificate[] certs = ((X509TrustManager) tm).getAcceptedIssuers();
+        mUrlConnectionVeriSign = (Button) findViewById(R.id.btn_iboxpay_verisign);
+        mUrlConnectionVeriSign.setOnClickListener(this);
 
-                    /*for (X509Certificate cert : certs) {
-                        Log.e(TAG, "--------------");
-                        Log.e(TAG, cert.toString());
-                        Log.e(TAG, "--------------");
-                    }*/
-                }
-            }
-
-            String kmfAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
-            Log.e(TAG, "KeyManagerFactory default algorithm: " + kmfAlgorithm);
-
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(kmfAlgorithm);
-            kmf.init(null, null);
-            KeyManager[] kms = kmf.getKeyManagers();
-
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, tms, null);
-
-            Log.e(TAG, "Keystore algorithm: " + KeyStore.getDefaultType());
-
-            SSLSocketFactory ssf = sslContext.getSocketFactory();
-            PersonalTrustManager personal = new PersonalTrustManager();
-
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableKeyException e) {
-            e.printStackTrace();
-        }
+        mOwnCloudIboxpaySign = (Button) findViewById(R.id.btn_owncloud_with_iboxpay_cert);
+        mOwnCloudIboxpaySign.setOnClickListener(this);
     }
 
     @Override
@@ -99,5 +75,38 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_iboxpay_urlcon:
+                new UrlConnectionRequst().request(IBOXPAY_LOGIN,
+                        ((TLSApplicaton)getApplication()).getDefaultSSLSocketFactory(),
+                        null, mUrlConnectionCb);
+                break;
+            case R.id.btn_selfsigned:
+                new UrlConnectionRequst().request(SELF_SIGN_OWN_CLOUD,
+                        ((TLSApplicaton)getApplication()).getDefaultSSLSocketFactory(),
+                        null, mUrlConnectionCb);
+                break;
+            case R.id.btn_urlconnection_personalsign:
+                new UrlConnectionRequst().request(IBOXPAY_LOGIN,
+                        ((TLSApplicaton)getApplication()).getIboxpaySSLSocketFactory(),
+                        null, mUrlConnectionCb);
+                break;
+            case R.id.btn_iboxpay_verisign:
+                new UrlConnectionRequst().request(IBOXPAY_LOGIN,
+                        ((TLSApplicaton)getApplication()).getIssuerSSLSocketFactory(),
+                        null, mUrlConnectionCb);
+                break;
+            case R.id.btn_owncloud_with_iboxpay_cert:
+                new UrlConnectionRequst().request(SELF_SIGN_OWN_CLOUD,
+                        ((TLSApplicaton)getApplication()).getIboxpaySSLSocketFactory(),
+                        null, mUrlConnectionCb);
+                break;
+            default:
+                break;
+        }
     }
 }
