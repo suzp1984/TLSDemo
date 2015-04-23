@@ -9,7 +9,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -17,6 +20,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private final String TAG = "TLSdemo";
     private final String IBOXPAY_LOGIN = "https://www.iboxpay.com/cashbox/login.htm";
     private final String SELF_SIGN_OWN_CLOUD = "https://172.30.60.165/owncloud/";
+
+    private Spinner mUrlsSpinner;
+    private ArrayAdapter<CharSequence> mUrlAdapater;
+    private String mUrl;
 
     private Button mIboxpayUrlBtn;
     private Button mSelfSignedBtn;
@@ -38,6 +45,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mUrlsSpinner = (Spinner) findViewById(R.id.sp_urls);
+        mUrlAdapater = ArrayAdapter.createFromResource(this,
+                R.array.urls, android.R.layout.simple_spinner_item);
+        mUrlAdapater.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mUrlsSpinner.setAdapter(mUrlAdapater);
+        mUrlsSpinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position,
+                            long id) {
+                        CharSequence chars = mUrlAdapater.getItem(position);
+                        mUrl = chars.toString();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                }
+        );
 
         mIboxpayUrlBtn = (Button) findViewById(R.id.btn_iboxpay_urlcon);
         mIboxpayUrlBtn.setOnClickListener(this);

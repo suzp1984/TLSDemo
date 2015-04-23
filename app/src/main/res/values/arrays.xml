@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="urls">
+        <item>https://www.iboxpay.com/cashbox/login.htm</item>
+        <item>https://172.30.60.165/owncloud/</item>
+    </string-array>
+</resources>
