@@ -14,4 +14,7 @@
 
     <string name="url_connection">Url Connection</string>
     <string name="http_client">Http Client</string>
+
+    <string name="clean_board">clean Msg</string>
+    <string name="no_response">no response</string>
 </resources>

@@ -6,7 +6,12 @@ import org.zpcat.test.network.ReqCallback;
 import org.zpcat.test.network.UrlConnectionRequst;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.io.InputStream;
 
@@ -120,6 +126,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             + "-----END CERTIFICATE-----";
 
     private CustomSSLSocketFactory mCustomSSLSocketFactory;
+    private TextView mMsgBoard;
     private Spinner mUrlsSpinner;
     private ArrayAdapter<CharSequence> mUrlAdapater;
 
@@ -131,11 +138,34 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private ReqCallback mUrlConnectionCb = new ReqCallback() {
         @Override
-        public void onResult(String result) {
+        public void onResult(final String result) {
             Log.e(TAG, "-----------");
+            CharSequence msg = mMsgBoard.getText();
+
+            SpannableStringBuilder builder = new SpannableStringBuilder()
+                    .append(msg);
+            if (msg.length() > 1 && msg.charAt((msg.length() - 1)) != '\n') {
+                builder.append('\n');
+            }
+
             if (result != null) {
                 Log.e(TAG, result);
+                builder.append(formatString(MainActivity.this, result,
+                        R.style.MsgBoardTextAppearance));
+            } else {
+                builder.append(formatString(MainActivity.this, R.string.no_response,
+                                R.style.CertErrorTextAppearance));
+
             }
+
+            msg = builder.subSequence(0, builder.length());
+            final CharSequence finalMsg = msg;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mMsgBoard.setText(finalMsg);
+                }
+            });
         }
     };
 
@@ -143,6 +173,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mMsgBoard = (TextView) findViewById(R.id.tv_msg_board);
 
         mUrlsSpinner = (Spinner) findViewById(R.id.sp_urls);
         mUrlAdapater = ArrayAdapter.createFromResource(this,
@@ -154,8 +186,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position,
                             long id) {
-                        /*CharSequence chars = mUrlAdapater.getItem(position);
-                        mUrl = chars.toString();*/
+
                     }
 
                     @Override
@@ -214,6 +245,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.action_clean_board) {
+            mMsgBoard.setText(null);
         }
 
         return super.onOptionsItemSelected(item);
@@ -287,5 +320,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
         return sslSocketFactory;
+    }
+
+    private static SpannableString formatString(Context context, int textId, int style) {
+        String text = context.getString(textId);
+        SpannableString spannableString = new SpannableString(text);
+        spannableString.setSpan(new TextAppearanceSpan(context, style), 0, text.length(), 0);
+        return spannableString;
+    }
+
+    private static SpannableString formatString(Context context, String text, int style) {
+        SpannableString spannableString = new SpannableString(text);
+        spannableString.setSpan(new TextAppearanceSpan(context, style), 0, text.length(), 0);
+        return spannableString;
     }
 }

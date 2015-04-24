@@ -5,4 +5,13 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="CertErrorTextAppearance" parent="@android:style/TextAppearance">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/red</item>
+    </style>
+
+    <style name="MsgBoardTextAppearance" parent="@android:style/TextAppearance">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/normal</item>
+    </style>
 </resources>
