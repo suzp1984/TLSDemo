@@ -48,7 +48,7 @@ public class UrlConnectionRequst implements AsyncNetRequest {
         @Override
         protected String doInBackground(String... params) {
             try {
-                char[] buffer = new char[1028];
+                char[] buffer = new char[2048];
 
                 URL url = new URL(mUrl);
                 HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
@@ -76,9 +76,12 @@ public class UrlConnectionRequst implements AsyncNetRequest {
 
                 Reader reader = null;
                 reader = new InputStreamReader(in, "UTF-8");
-                reader.read(buffer);
+                int length = reader.read(buffer);
 
-                return new String(buffer);
+                char[] tmpBuf = new char[length];
+                System.arraycopy(buffer, 0, tmpBuf, 0, length);
+
+                return new String(tmpBuf);
 
             } catch (IOException e) {
                 e.printStackTrace();

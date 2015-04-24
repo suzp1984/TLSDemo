@@ -15,21 +15,19 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import java.io.InputStream;
+
 import javax.net.ssl.SSLSocketFactory;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private final String TAG = "TLSdemo";
-    private final String IBOXPAY_LOGIN = "https://www.iboxpay.com/cashbox/login.htm";
-    private final String SELF_SIGN_OWN_CLOUD = "https://172.30.60.165/owncloud/";
 
     private Spinner mUrlsSpinner;
     private ArrayAdapter<CharSequence> mUrlAdapater;
-    private String mUrl;
 
     private Spinner mCertsSpinner;
     private ArrayAdapter<CharSequence> mCertsAdapater;
-    private String mCert;
 
     private Button mUrlConnectionBtn;
     private Button mHttpClientBtn;
@@ -126,7 +124,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         SSLSocketFactory sslSocketFactory = getCurrentSSLSocketFactory();
-        String url = ((CharSequence) mUrlsSpinner.getSelectedItem()).toString();
+        String url = mUrlsSpinner.getSelectedItem().toString();
 
         switch (v.getId()) {
             case R.id.btn_url_connection:
@@ -169,6 +167,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 sslSocketFactory = ((TLSApplicaton)getApplication())
                         .getGitIboxpaySSLSocketFactory();
                 Log.e(TAG, "4");
+                break;
+            case 5:
+                InputStream input = getResources().openRawResource(R.raw.gitlab_iboxpay);
+                sslSocketFactory = ((TLSApplicaton)getApplication())
+                        .getGitlabIboxpayBKSSocketFactory(input, "123456");
+                Log.e(TAG, "5");
                 break;
             default:
                 sslSocketFactory = null;

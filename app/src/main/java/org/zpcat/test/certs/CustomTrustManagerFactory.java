@@ -1,5 +1,7 @@
 package org.zpcat.test.certs;
 
+import java.io.InputStream;
+
 import javax.net.ssl.TrustManager;
 
 /**
@@ -11,4 +13,8 @@ public class CustomTrustManagerFactory {
         return new PEMTrustManager(pems);
     }
 
+    public static TrustManager getTrustManagerFromKeyStore(InputStream store,
+            String passwd) {
+        return new BKSKeyStoreTrustManager(store, passwd);
+    }
 }

@@ -4,11 +4,11 @@
 package org.zpcat.test;
 
 import org.zpcat.test.certs.CustomTrustManagerFactory;
-import org.zpcat.test.certs.GitIboxpayTrustManager;
 
 import android.app.Application;
 import android.util.Log;
 
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -239,6 +239,25 @@ public class TLSApplicaton extends Application {
                 CustomTrustManagerFactory.getTrustManagerFromPEM(mGitlabIboxpayPemCert);
         TrustManager[] tms = new TrustManager[1];
         tms[0] = gitIboxpayTrustManager;
+
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tms, null);
+            return sslContext.getSocketFactory();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public SSLSocketFactory getGitlabIboxpayBKSSocketFactory(InputStream input, String passwd) {
+        TrustManager gitlabTrustManager =
+                CustomTrustManagerFactory.getTrustManagerFromKeyStore(input, passwd);
+        TrustManager[] tms = new TrustManager[1];
+        tms[0] = gitlabTrustManager;
 
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");

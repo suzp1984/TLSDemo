@@ -9,8 +9,9 @@
     <string-array name="certs">
         <item>null ssl socket factory</item>
         <item>default ssl socket factory</item>
-        <item>iboxpay root certificate</item>
-        <item>VeriSign certificate</item>
-        <item>git.iboxpay.com Self Signed</item>
+        <item>iboxpay pem root certificate</item>
+        <item>VeriSign pem certificate</item>
+        <item>git.iboxpay.com pem Self Signed</item>
+        <item>git.iboxpay.com bks self-signed store</item>
     </string-array>
 </resources>
