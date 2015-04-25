@@ -22,7 +22,12 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 import javax.net.ssl.SSLSocketFactory;
 
@@ -263,8 +268,49 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         null, mUrlConnectionCb);
                 break;
             case R.id.btn_http_client:
-                new HttpClientRequest().request(url, sslSocketFactory,
-                        null, mUrlConnectionCb);
+                switch (mCertsSpinner.getSelectedItemPosition()) {
+                    case 5:
+                        try {
+                            InputStream input = getResources().openRawResource(R.raw.gitlab_iboxpay);
+                            KeyStore keyStore = KeyStore.getInstance("BKS");
+                            keyStore.load(input, "123456".toCharArray());
+                            new HttpClientRequest().request(url, null, mUrlConnectionCb,
+                                    keyStore, "123456");
+                        } catch (KeyStoreException e) {
+                            e.printStackTrace();
+                        } catch (CertificateException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                        Log.e(TAG, "http client unsupport this.");
+                        CharSequence msg = mMsgBoard.getText();
+
+                        SpannableStringBuilder builder = new SpannableStringBuilder()
+                                .append(msg);
+                        if (msg.length() > 1 && msg.charAt((msg.length() - 1)) != '\n') {
+                            builder.append('\n');
+                        }
+
+                        builder.append(formatString(MainActivity.this, R.string.http_client_unsupport,
+                                R.style.CertErrorTextAppearance));
+
+                        msg = builder.subSequence(0, builder.length());
+                        final CharSequence finalMsg = msg;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mMsgBoard.setText(finalMsg);
+                            }
+                        });
+
+                        break;
+
+                }
                 break;
             default:
                 break;
@@ -285,30 +331,23 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.e(TAG, "1");
                 break;
             case 2:
-                /*sslSocketFactory = ((TLSApplicaton)getApplication())
-                        .getIboxpaySSLSocketFactory();*/
                 sslSocketFactory = mCustomSSLSocketFactory
                         .getSSLSocketFactoryFromPEM(mIboxpayPEMCert);
                 Log.e(TAG, "2");
                 break;
             case 3:
-                /*sslSocketFactory = ((TLSApplicaton)getApplication())
-                        .getVeriSignSSLSocketFactory();*/
                 sslSocketFactory = mCustomSSLSocketFactory
                         .getSSLSocketFactoryFromPEM(mVeriSignPemCert);
                 Log.e(TAG, "3");
                 break;
             case 4:
-                /*sslSocketFactory = ((TLSApplicaton)getApplication())
-                        .getGitIboxpaySSLSocketFactory();*/
                 sslSocketFactory = mCustomSSLSocketFactory
                         .getSSLSocketFactoryFromPEM(mGitlabIboxpayPemCert);
                 Log.e(TAG, "4");
                 break;
             case 5:
                 InputStream input = getResources().openRawResource(R.raw.gitlab_iboxpay);
-                /*sslSocketFactory = ((TLSApplicaton)getApplication())
-                        .getGitlabIboxpayBKSSocketFactory(input, "123456");*/
+
                 sslSocketFactory = mCustomSSLSocketFactory
                         .getSSLSocketFactoryFromBKSKeyStore(input, "123456");
                 Log.e(TAG, "5");

@@ -17,4 +17,5 @@
 
     <string name="clean_board">clean Msg</string>
     <string name="no_response">no response</string>
+    <string name="http_client_unsupport">Http Client un Support</string>
 </resources>

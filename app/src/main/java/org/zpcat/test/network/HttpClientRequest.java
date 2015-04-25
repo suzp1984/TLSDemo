@@ -1,28 +1,36 @@
 package org.zpcat.test.network;
 
+import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.scheme.HostNameResolver;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SocketFactory;
+import org.apache.http.params.HttpParams;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 
 /**
@@ -37,6 +45,9 @@ public class HttpClientRequest implements AsyncNetRequest {
     private Map<String, String> mParms;
     private SSLSocketFactory mSSLSocketFactory;
 
+    private KeyStore mKeyStore;
+    private String mKeyStorePasswd;
+
     @Override
     public void request(String url,
                         SSLSocketFactory sslSocketFactory,
@@ -50,11 +61,47 @@ public class HttpClientRequest implements AsyncNetRequest {
         new NetAsyncTask().execute();
     }
 
+    public void request(String url, Map<String, String> params, ReqCallback callback,
+                        KeyStore keystore, String passwd) {
+
+        mReqCallback = callback;
+        mUrl = url;
+        mParms = params;
+        mKeyStore = keystore;
+        mKeyStorePasswd = passwd;
+
+        new NetAsyncTask().execute();
+    }
+
     private class NetAsyncTask extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... params) {
-            HttpClient httpClient = new DefaultHttpClient();
+            AndroidHttpClient httpClient = AndroidHttpClient.newInstance("android");
+            if (mKeyStore != null) {
+                Scheme https = null;
+                try {
+                    https = new Scheme("https", new AdapterSSLSocketFactory(mKeyStore,
+                            mKeyStorePasswd), 443);
+                    Log.e(TAG, "initialize https scheme");
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (KeyManagementException e) {
+                    e.printStackTrace();
+                } catch (KeyStoreException e) {
+                    e.printStackTrace();
+                } catch (UnrecoverableKeyException e) {
+                    e.printStackTrace();
+                }
+
+                List<String> schemes =
+                        httpClient.getConnectionManager().getSchemeRegistry().getSchemeNames();
+                for (String name : schemes) {
+                    httpClient.getConnectionManager().getSchemeRegistry().unregister(name);
+                }
+
+                httpClient.getConnectionManager().getSchemeRegistry().register(https);
+            }
 
             HttpGet httpGet = new HttpGet(mUrl);
             HttpResponse response;
@@ -112,5 +159,17 @@ public class HttpClientRequest implements AsyncNetRequest {
         }
 
         return sb.toString();
+    }
+
+    // direct implementation of apache's SSLSocketFactory
+
+    class AdapterSSLSocketFactory extends org.apache.http.conn.ssl.SSLSocketFactory {
+
+
+        public AdapterSSLSocketFactory(KeyStore keystore, String keystorePassword)
+                throws NoSuchAlgorithmException, KeyManagementException,
+                        KeyStoreException, UnrecoverableKeyException {
+            super(keystore, keystorePassword);
+        }
     }
 }
