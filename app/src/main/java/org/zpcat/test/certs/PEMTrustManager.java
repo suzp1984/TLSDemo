@@ -1,5 +1,6 @@
 package org.zpcat.test.certs;
 
+import android.util.Base64;
 import android.util.Log;
 
 import java.io.ByteArrayInputStream;
@@ -59,6 +60,12 @@ public class PEMTrustManager implements X509TrustManager {
                     "sigAlgName: " + cert.getSigAlgName()
                             + "; SigAlgOID: " + cert.getSigAlgOID());
             try {
+                Log.e(TAG, "public key algorithm: " + mCert.getPublicKey().getAlgorithm()
+                            + "; form: " + mCert.getPublicKey().getFormat()
+                            + "; key: " + mCert.getPublicKey().toString());
+                Log.e(TAG, "public key base64: " + Base64.encodeToString(
+                        mCert.getPublicKey().getEncoded(), Base64.DEFAULT));
+
                 cert.verify(mCert.getPublicKey());
                 ok = true;
                 break;

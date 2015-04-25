@@ -14,5 +14,7 @@
         <item>VeriSign pem certificate</item>
         <item>git.iboxpay.com pem Self Signed</item>
         <item>git.iboxpay.com bks self-signed store</item>
+        <item>turbine engine pem self signed</item>
+        <item>Turbine Engine bks self-signed store</item>
     </string-array>
 </resources>

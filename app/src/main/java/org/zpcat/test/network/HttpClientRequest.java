@@ -94,11 +94,11 @@ public class HttpClientRequest implements AsyncNetRequest {
                     e.printStackTrace();
                 }
 
-                List<String> schemes =
+               /* List<String> schemes =
                         httpClient.getConnectionManager().getSchemeRegistry().getSchemeNames();
                 for (String name : schemes) {
                     httpClient.getConnectionManager().getSchemeRegistry().unregister(name);
-                }
+                }*/
 
                 httpClient.getConnectionManager().getSchemeRegistry().register(https);
             }

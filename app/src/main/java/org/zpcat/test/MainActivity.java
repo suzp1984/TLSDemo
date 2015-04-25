@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.method.ScrollingMovementMethod;
 import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.Menu;
@@ -130,6 +131,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
             + "qQ2mRHNQ3XBb7a1+Srwi1agm5MKFIA3Z\n"
             + "-----END CERTIFICATE-----";
 
+    private final String mTurbinePEM = "-----BEGIN CERTIFICATE-----\n" +
+            "MIICwDCCAaigAwIBAgIJAL61xCEOr3OFMA0GCSqGSIb3DQEBCwUAMBgxFjAUBgNV\n" +
+            "BAMTDVR1cmJpbmVFbmdpbmUwHhcNMTUwNDA5MTQ1MjE2WhcNMjUwNDA2MTQ1MjE2\n" +
+            "WjAYMRYwFAYDVQQDEw1UdXJiaW5lRW5naW5lMIIBIjANBgkqhkiG9w0BAQEFAAOC\n" +
+            "AQ8AMIIBCgKCAQEAsIzmnTlvEVhKTEamNvOWS0f8bcx3I6se8V9QQRGkhw77b+OD\n" +
+            "iU59/f+LCigO+wSujP89PADQdiaWmz+VlM5ijf2hx0wXwPjoU1IvcpLuEhYhKJk8\n" +
+            "ejFMplkpfywjp5qOYzqUShuivkDhI2HsYBeeSta6VPsuySiu6alffynM0Oj3qKLM\n" +
+            "+XPQF51rU3aEkxbWl8sDwDMJLLdPd0F2sQ0zJ/U6jvGyZPHt9mzAhed0coqqNGcw\n" +
+            "jnClESfivKGEkycYCsvaceGLCnyEvwVwc+qv8TZpoEp2QxXDVf2K2hTkNg3AlNZK\n" +
+            "CMzW/4d3lzPNQEzLxbP5fW7paLgvvX6yDh82YwIDAQABow0wCzAJBgNVHRMEAjAA\n" +
+            "MA0GCSqGSIb3DQEBCwUAA4IBAQAb5PrbTYt+/lFYdrZX6S5ECPuxf8K1rJPkYm7P\n" +
+            "4xvuA5a8PMrIFNBAnMmpur4Lm6X+BOWcSuBHIYU4QHGtSX8y+zBsngOqUb/XPzI5\n" +
+            "11EztA3wZrFtzfBGFfE/ywrSqsUIJwkLEEMOmq//g5ZvEdpY3a0u28I8JycoFQVE\n" +
+            "EyNaSBBQA7M3o9as8ZQSzG1MyjvU3uV2qyreEc4wlpOomULwISit3tC3EKfByLVe\n" +
+            "p637YF94EPqPCftM04lbX03v7v4XkMZhLZ6v1es9yCU5wSluqS0eWlGJti2qzz9S\n" +
+            "C0Sh9gfLNGqujDPrs4hDJcfX+ujbvl9g4n6n84zSjSK4OgF4\n" +
+            "-----END CERTIFICATE-----";
+
     private CustomSSLSocketFactory mCustomSSLSocketFactory;
     private TextView mMsgBoard;
     private Spinner mUrlsSpinner;
@@ -180,6 +199,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         mMsgBoard = (TextView) findViewById(R.id.tv_msg_board);
+        mMsgBoard.setMovementMethod(new ScrollingMovementMethod());
 
         mUrlsSpinner = (Spinner) findViewById(R.id.sp_urls);
         mUrlAdapater = ArrayAdapter.createFromResource(this,
@@ -286,6 +306,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             e.printStackTrace();
                         }
                         break;
+                    case 7:
+                        try {
+                            InputStream input = getResources().openRawResource(R.raw.turbine);
+                            KeyStore keyStore = KeyStore.getInstance("BKS");
+                            keyStore.load(input, "123456".toCharArray());
+                            new HttpClientRequest().request(url, null, mUrlConnectionCb,
+                                    keyStore, "123456");
+                        } catch (KeyStoreException e) {
+                            e.printStackTrace();
+                        } catch (CertificateException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        break;
                     default:
                         Log.e(TAG, "http client unsupport this.");
                         CharSequence msg = mMsgBoard.getText();
@@ -351,6 +389,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 sslSocketFactory = mCustomSSLSocketFactory
                         .getSSLSocketFactoryFromBKSKeyStore(input, "123456");
                 Log.e(TAG, "5");
+                break;
+            case 6:
+                sslSocketFactory = mCustomSSLSocketFactory
+                        .getSSLSocketFactoryFromPEM(mTurbinePEM);
+                Log.e(TAG, "6");
+                break;
+            case 7:
+                InputStream turbine = getResources().openRawResource(R.raw.turbine);
+
+                sslSocketFactory = mCustomSSLSocketFactory.getSSLSocketFactoryFromBKSKeyStore(
+                        turbine, "123456");
+                Log.e(TAG, "7");
                 break;
             default:
                 sslSocketFactory = null;
