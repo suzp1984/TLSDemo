@@ -113,11 +113,11 @@ Here is just a piece of code:
 
 ```
 
-While that's not enough, that's why I wrote following demo [[https://github.com/suzp1984/TLSDemo][TLSDemo]].
+While that's not enough, that's why I wrote following demo [TLSDemo](https://github.com/suzp1984/TLSDemo).
 
 # TLSDemo
 
-I wrote this demo here [[https://github.com/suzp1984/TLSDemo][TLSDemo]] to illustrate how to use SSL client in Android.
+I wrote this demo here [TLSDemo](https://github.com/suzp1984/TLSDemo) to illustrate how to use SSL client in Android.
 It illustrates following puzzles:
 
 - How to import certificates in PEM format.
@@ -130,14 +130,14 @@ api was so incompatible, for example, HttpClient is the apache's http
 client interface, so its SSLSocketFactory is not compatible with the
 javax.net.SSLSocketFactory.
 
-But except the unfinished HttpClient implementation, [[https://github.com/suzp1984/TLSDemo][TLSDemo]] is still a 
+But except the unfinished HttpClient implementation, [TLSDemo](https://github.com/suzp1984/TLSDemo) is still a 
 good reference of how to use https in UrlConnection, and how SSLContext 
 works?
 
 
 # reference resources
-[http://developer.android.com/training/articles/security-ssl.html](http://developer.android.com/training/articles/security-ssl.html)
-[http://ogrelab.ikratko.com/using-android-volley-with-self-signed-certificate/](http://ogrelab.ikratko.com/using-android-volley-with-self-signed-certificate/)
-[http://stackoverflow.com/questions/2138940/import-pem-into-java-key-store](http://stackoverflow.com/questions/2138940/import-pem-into-java-key-store)
-[http://stackoverflow.com/questions/3685548/java-keytool-easy-way-to-add-server-cert-from-url-port](http://stackoverflow.com/questions/3685548/java-keytool-easy-way-to-add-server-cert-from-url-port)
+- [http://developer.android.com/training/articles/security-ssl.html](http://developer.android.com/training/articles/security-ssl.html)
+- [http://ogrelab.ikratko.com/using-android-volley-with-self-signed-certificate/](http://ogrelab.ikratko.com/using-android-volley-with-self-signed-certificate/)
+- [http://stackoverflow.com/questions/2138940/import-pem-into-java-key-store](http://stackoverflow.com/questions/2138940/import-pem-into-java-key-store)
+- [http://stackoverflow.com/questions/3685548/java-keytool-easy-way-to-add-server-cert-from-url-port](http://stackoverflow.com/questions/3685548/java-keytool-easy-way-to-add-server-cert-from-url-port)
 
