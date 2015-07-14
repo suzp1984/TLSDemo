@@ -16,5 +16,6 @@
         <item>git.iboxpay.com bks self-signed store</item>
         <item>turbine engine pem self signed</item>
         <item>Turbine Engine bks self-signed store</item>
+        <item>Turbine 2-way SSL pem key certificate </item>
     </string-array>
 </resources>

@@ -9,9 +9,9 @@ import javax.net.ssl.KeyManager;
  */
 public class CustomKeyManagerFactory {
 
-    public static KeyManager getKeyManagerFromFile(String[] pems, String privKey) {
+    public static KeyManager getKeyManagerFromFile(String pem, String privKey) {
 
-        return new PEMKeyManager(pems, privKey);
+        return new PEMKeyManager(pem, privKey);
     }
 
     public static KeyManager[] getKeyManagerFromKeyStore(InputStream input, String passwd) {

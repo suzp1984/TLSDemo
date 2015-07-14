@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -44,21 +45,19 @@ public class CustomSSLSocketFactory {
         return null;
     }
 
-    public SSLSocketFactory getSSLSocketFactoryWithKeyManagerFromPem(String[] clientPems,
-            String[] privateKey, String[] PEMS) {
+    public SSLSocketFactory getSSLSocketFactoryWithKeyManagerFromPem(String clientPem,
+            String privateKey, String servrePem) {
         ArrayList<TrustManager> tmsList = new ArrayList<>();
 
-        for (String pem : PEMS) {
-            TrustManager trustManager = CustomTrustManagerFactory.getTrustManagerFromPEM(pem);
-            if (trustManager != null) {
-                tmsList.add(trustManager);
-            }
-        }
+        TrustManager tm = CustomTrustManagerFactory.getTrustManagerFromPEM(servrePem);
 
+        tmsList.add(tm);
         TrustManager[] tms = tmsList.toArray(new TrustManager[tmsList.size()]);
+
+        KeyManager km = CustomKeyManagerFactory.getKeyManagerFromFile(clientPem, privateKey);
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, tms, null);
+            sslContext.init(new KeyManager[]{km}, tms, null);
             return sslContext.getSocketFactory();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
