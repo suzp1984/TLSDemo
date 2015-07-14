@@ -44,6 +44,31 @@ public class CustomSSLSocketFactory {
         return null;
     }
 
+    public SSLSocketFactory getSSLSocketFactoryWithKeyManagerFromPem(String[] clientPems,
+            String[] privateKey, String[] PEMS) {
+        ArrayList<TrustManager> tmsList = new ArrayList<>();
+
+        for (String pem : PEMS) {
+            TrustManager trustManager = CustomTrustManagerFactory.getTrustManagerFromPEM(pem);
+            if (trustManager != null) {
+                tmsList.add(trustManager);
+            }
+        }
+
+        TrustManager[] tms = tmsList.toArray(new TrustManager[tmsList.size()]);
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tms, null);
+            return sslContext.getSocketFactory();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public SSLSocketFactory getSSLSocketFactoryFromBKSKeyStore(InputStream input, String passwd) {
         TrustManager[] tms = fetchTrustManager(input, passwd);
         try {
