@@ -115,6 +115,49 @@ Here is just a piece of code:
 
 While that's not enough, that's why I wrote following demo [TLSDemo](https://github.com/suzp1984/TLSDemo).
 
+# Two-way SSL verfication
+
+SSL support server-side verification, just the reverse of the former ones, at this time the
+certificates are stored in the client side, and also a private key. So how to configure
+the client side to support those feature.
+
+The key point is to give the Keyanager array to the SSLContext.init method.
+
+```java
+    sslContext.init(new KeyManager[]{km}, tms, null);
+```
+
+following methods is example of generate a KeyManager from the client certificate and
+its related private key, and the factoray class, CustomKeyManagerFactory is the
+wrapper class that you can leverage.
+
+Oh, in android platform, it only support pkcs8 format private key.
+
+```java
+    public SSLSocketFactory getSSLSocketFactoryWithKeyManagerFromPem(String clientPem,
+            String privateKey, String servrePem) {
+        ArrayList<TrustManager> tmsList = new ArrayList<>();
+
+        TrustManager tm = CustomTrustManagerFactory.getTrustManagerFromPEM(servrePem);
+
+        tmsList.add(tm);
+        TrustManager[] tms = tmsList.toArray(new TrustManager[tmsList.size()]);
+
+        KeyManager km = CustomKeyManagerFactory.getKeyManagerFromFile(clientPem, privateKey);
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(new KeyManager[]{km}, tms, null);
+            return sslContext.getSocketFactory();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+```
+
 # TLSDemo
 
 I wrote this demo here [TLSDemo](https://github.com/suzp1984/TLSDemo) to illustrate how to use SSL client in Android.
