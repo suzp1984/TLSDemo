@@ -147,13 +147,13 @@ and SSLSocketFactory.</p>
 certificates are stored in the client side, and also a private key. So how to configure
 the client side to support those feature.</p>
 
-<p>The key point is to give the Keyanager array to the SSLContext.init method.</p>
+<p>The key point is to give the KeyManager array into the SSLContext.init method.</p>
 
 <div class="highlight highlight-java"><pre>    sslContext<span class="pl-k">.</span>init(<span class="pl-k">new</span> <span class="pl-smi">KeyManager</span>[]{km}, tms, <span class="pl-c1">null</span>);</pre></div>
 
 <p>following methods is example of generate a KeyManager from the client certificate and
 its related private key, and the factoray class, CustomKeyManagerFactory is the
-wrapper class that you can leverage.</p>
+wrapper class that you can leverage latter.</p>
 
 <p>Oh, in android platform, it only support pkcs8 format private key.</p>
 
