@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>TLSDemo by suzp1984</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>TLSDemo</h1>
+        <h2>A demo illustrate how to implement https client request in Android, it also meaningful in all JDK environment.</h2>
+        <a href="https://github.com/suzp1984/TLSDemo" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="tls-demo" class="anchor" href="#tls-demo" aria-hidden="true"><span class="octicon octicon-link"></span></a>TLS Demo</h1>
+
+<p>A sample to show up how to use https client in Android.</p>
+
+<h1>
+<a id="java-keytool" class="anchor" href="#java-keytool" aria-hidden="true"><span class="octicon octicon-link"></span></a>Java Keytool</h1>
+
+<p>Java keystore is like a database which store certificates
+and private keys and protect them by a password maybe. There
+are at least three <a href="http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html#KeyStore">formats</a> of that, JKS, PKCS12, JCEKS, and
+many more.</p>
+
+<p>But in this tutorial, I only consider two formats of that
+JKS which is the Java's default format and BKS which is the
+Android's default format.</p>
+
+<p>How to write the certificate to the BKS style KeyStore?
+First step was to prepare your certificate at least, the PEM
+format and DER format is ok. Then to download
+<a href="http://www.bouncycastle.org/fr/download/bcprov-jdk16-146.jar">bcprov-jdk16-146.jar</a>. after that use following command to
+import an X590 certificate into the keystore.</p>
+
+<div class="highlight highlight-sh"><pre>  keytool -importcert -v -trustcacerts -file <span class="pl-s"><span class="pl-pds">"</span>my_server_cert.der<span class="pl-pds">"</span></span> -alias key_alias -keystore <span class="pl-s"><span class="pl-pds">"</span>my.bks<span class="pl-pds">"</span></span> -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath <span class="pl-s"><span class="pl-pds">"</span>bcprov-jdk16-146.jar<span class="pl-pds">"</span></span> -storetype BKS</pre></div>
+
+<p>Import an PEM X509 certificate into JKS keystore:</p>
+
+<div class="highlight highlight-sh"><pre>  keytool -importcert -v -trustcacerts -file <span class="pl-s"><span class="pl-pds">"</span>cas.pem<span class="pl-pds">"</span></span> -alias cas_alias -keystore <span class="pl-s"><span class="pl-pds">"</span>cas.jks<span class="pl-pds">"</span></span> -storetype JKS</pre></div>
+
+<p>The default export format of keytool is der format.</p>
+
+<div class="highlight highlight-sh"><pre>  keytool -exportcert -alias cas_alias -keystore <span class="pl-s"><span class="pl-pds">"</span>cas.jks<span class="pl-pds">"</span></span> <span class="pl-k">&gt;</span> cas.der
+</pre></div>
+
+<h1>
+<a id="certificate-formats" class="anchor" href="#certificate-formats" aria-hidden="true"><span class="octicon octicon-link"></span></a>Certificate formats</h1>
+
+<p>The certificate which I mentioned here are all reference to 
+X509 format, which is not just the most wildly used, but also
+the standard in the PKI industry. The evidence is that there
+are Certificate interface in the JDK, but with just only one
+child, X509Certificate class.</p>
+
+<p>Now, go back to the point, there are two X509 Certificate formats here,
+PEM and CER, they are equivalent same things. PEM is base64 encoded 
+format, CER is the binary format.</p>
+
+<p>Using the following cmds to download and convert between each other.</p>
+
+<div class="highlight highlight-sh"><pre>  <span class="pl-c">#download pem certificate by guntls</span>
+  gnutls-cli --print-cert www.youwebsite.com <span class="pl-k">|</span> sed -ne <span class="pl-s"><span class="pl-pds">'</span>/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p<span class="pl-pds">'</span></span>
+
+  <span class="pl-c">#download pem certificate by openssl</span>
+  openssl s_client -connect <span class="pl-smi">${HOST}</span>:<span class="pl-smi">${PORT}</span> <span class="pl-k">&lt;</span>/dev/null <span class="pl-k">|</span> sed -ne <span class="pl-s"><span class="pl-pds">'</span>/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p<span class="pl-pds">'</span></span>
+
+  <span class="pl-c"># convert DER binary format certificate to PEM base64 encoded format</span>
+  openssl x509 -inform der -<span class="pl-k">in</span> cas.der -outform pem -out cas.pem
+
+  <span class="pl-c"># convert PEM base64 encoded format certificate to DER binary format</span>
+  openssl x509 -inform pem -<span class="pl-k">in</span> cas.pem -outform der -out cas.der
+</pre></div>
+
+<h1>
+<a id="use-https-in-android-client" class="anchor" href="#use-https-in-android-client" aria-hidden="true"><span class="octicon octicon-link"></span></a>Use Https in Android Client</h1>
+
+<p>Before going that, you need to figure out how many http clients in Android.
+Basically, there are only two http clients available in Android, HttpUrlConnection
+and AndroidHttpClient, which two are provided by the system. While HttpUrlConnection
+is the barely the only one left now, because AndroidHttpClient and its sibling, 
+DefaultHttpClient and its parent HttpClient are all deprecated in Android 2.3. So
+choose HttpUrlConnection if you wanna wrote any http client code.</p>
+
+<p>And the most of the 3rd party Http Clients are developed above them, Volley, and what ever,
+but Square's OkHttp, which implements its own http stack.</p>
+
+<h1>
+<a id="java-sslcontext" class="anchor" href="#java-sslcontext" aria-hidden="true"><span class="octicon octicon-link"></span></a>Java SSLContext</h1>
+
+<p>I think to use SSL programming in java is to understand SSLContext and its 
+related classes KeyManager, TrustManager, KeyManagerFactory, TrustManagerFactory,
+and SSLSocketFactory.</p>
+
+<p>Here is just a piece of code:</p>
+
+<div class="highlight highlight-java"><pre>
+        <span class="pl-smi">KeyStore</span> keyStore <span class="pl-k">=</span> <span class="pl-c1">null</span>;
+        <span class="pl-k">try</span> {
+            keyStore <span class="pl-k">=</span> <span class="pl-smi">KeyStore</span><span class="pl-k">.</span>getInstance(<span class="pl-s"><span class="pl-pds">"</span>BKS<span class="pl-pds">"</span></span>);
+            keyStore<span class="pl-k">.</span>load(in, passwd<span class="pl-k">.</span>toCharArray());
+            <span class="pl-smi">TrustManagerFactory</span> tmf <span class="pl-k">=</span> <span class="pl-smi">TrustManagerFactory</span><span class="pl-k">.</span>getInstance(<span class="pl-s"><span class="pl-pds">"</span>X509<span class="pl-pds">"</span></span>);
+            tmf<span class="pl-k">.</span>init(keyStore);
+
+            <span class="pl-k">TrustManager</span>[] tms <span class="pl-k">=</span> tmf<span class="pl-k">.</span>getTrustManagers();
+
+            <span class="pl-smi">SSLContext</span> sslContext <span class="pl-k">=</span> <span class="pl-smi">SSLContext</span><span class="pl-k">.</span>getInstance(<span class="pl-s"><span class="pl-pds">"</span>TLS<span class="pl-pds">"</span></span>);
+            sslContext<span class="pl-k">.</span>init(<span class="pl-c1">null</span>, tms, <span class="pl-c1">null</span>);
+            <span class="pl-smi">SSLSocketFactory</span> ssf <span class="pl-k">=</span> sslContext<span class="pl-k">.</span>getSocketFactory();
+
+        } <span class="pl-k">catch</span> (<span class="pl-smi">KeyStoreException</span> e) {
+            e<span class="pl-k">.</span>printStackTrace();
+        } <span class="pl-k">catch</span> (<span class="pl-smi">CertificateException</span> e) {
+            e<span class="pl-k">.</span>printStackTrace();
+        } <span class="pl-k">catch</span> (<span class="pl-smi">NoSuchAlgorithmException</span> e) {
+            e<span class="pl-k">.</span>printStackTrace();
+        } <span class="pl-k">catch</span> (<span class="pl-smi">IOException</span> e) {
+            e<span class="pl-k">.</span>printStackTrace();
+        }
+
+</pre></div>
+
+<p>While that's not enough, that's why I wrote following demo <a href="https://github.com/suzp1984/TLSDemo">TLSDemo</a>.</p>
+
+<h1>
+<a id="two-way-ssl-verfication" class="anchor" href="#two-way-ssl-verfication" aria-hidden="true"><span class="octicon octicon-link"></span></a>Two-way SSL verfication</h1>
+
+<p>SSL support server-side verification, just the reverse of the former ones, at this time the
+certificates are stored in the client side, and also a private key. So how to configure
+the client side to support those feature.</p>
+
+<p>The key point is to give the Keyanager array to the SSLContext.init method.</p>
+
+<div class="highlight highlight-java"><pre>    sslContext<span class="pl-k">.</span>init(<span class="pl-k">new</span> <span class="pl-smi">KeyManager</span>[]{km}, tms, <span class="pl-c1">null</span>);</pre></div>
+
+<p>following methods is example of generate a KeyManager from the client certificate and
+its related private key, and the factoray class, CustomKeyManagerFactory is the
+wrapper class that you can leverage.</p>
+
+<p>Oh, in android platform, it only support pkcs8 format private key.</p>
+
+<div class="highlight highlight-java"><pre>    <span class="pl-k">public</span> <span class="pl-smi">SSLSocketFactory</span> getSSLSocketFactoryWithKeyManagerFromPem(<span class="pl-smi">String</span> clientPem,
+            <span class="pl-smi">String</span> privateKey, <span class="pl-smi">String</span> servrePem) {
+        <span class="pl-k">ArrayList&lt;<span class="pl-smi">TrustManager</span>&gt;</span> tmsList <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">ArrayList&lt;&gt;</span>();
+
+        <span class="pl-smi">TrustManager</span> tm <span class="pl-k">=</span> <span class="pl-smi">CustomTrustManagerFactory</span><span class="pl-k">.</span>getTrustManagerFromPEM(servrePem);
+
+        tmsList<span class="pl-k">.</span>add(tm);
+        <span class="pl-k">TrustManager</span>[] tms <span class="pl-k">=</span> tmsList<span class="pl-k">.</span>toArray(<span class="pl-k">new</span> <span class="pl-smi">TrustManager</span>[tmsList<span class="pl-k">.</span>size()]);
+
+        <span class="pl-smi">KeyManager</span> km <span class="pl-k">=</span> <span class="pl-smi">CustomKeyManagerFactory</span><span class="pl-k">.</span>getKeyManagerFromFile(clientPem, privateKey);
+        <span class="pl-k">try</span> {
+            <span class="pl-smi">SSLContext</span> sslContext <span class="pl-k">=</span> <span class="pl-smi">SSLContext</span><span class="pl-k">.</span>getInstance(<span class="pl-s"><span class="pl-pds">"</span>TLS<span class="pl-pds">"</span></span>);
+            sslContext<span class="pl-k">.</span>init(<span class="pl-k">new</span> <span class="pl-smi">KeyManager</span>[]{km}, tms, <span class="pl-c1">null</span>);
+            <span class="pl-k">return</span> sslContext<span class="pl-k">.</span>getSocketFactory();
+        } <span class="pl-k">catch</span> (<span class="pl-smi">NoSuchAlgorithmException</span> e) {
+            e<span class="pl-k">.</span>printStackTrace();
+        } <span class="pl-k">catch</span> (<span class="pl-smi">KeyManagementException</span> e) {
+            e<span class="pl-k">.</span>printStackTrace();
+        }
+
+        <span class="pl-k">return</span> <span class="pl-c1">null</span>;
+    }</pre></div>
+
+<h1>
+<a id="tlsdemo" class="anchor" href="#tlsdemo" aria-hidden="true"><span class="octicon octicon-link"></span></a>TLSDemo</h1>
+
+<p>I wrote this demo here <a href="https://github.com/suzp1984/TLSDemo">TLSDemo</a> to illustrate how to use SSL client in Android.
+It illustrates following puzzles:</p>
+
+<ul>
+<li>How to import certificates in PEM format.</li>
+<li>How to import certificates in BKS type Keystore.</li>
+<li>How to connect https sites in HttpUrlConnection.</li>
+</ul>
+
+<p>There are still some faults in this demo that is the HttpClient https 
+connection is not implemented actually, because of the already deprecated 
+api was so incompatible, for example, HttpClient is the apache's http
+client interface, so its SSLSocketFactory is not compatible with the
+javax.net.SSLSocketFactory.</p>
+
+<p>But except the unfinished HttpClient implementation, <a href="https://github.com/suzp1984/TLSDemo">TLSDemo</a> is still a 
+good reference of how to use https in UrlConnection, and how SSLContext 
+works?</p>
+
+<h1>
+<a id="reference-resources" class="anchor" href="#reference-resources" aria-hidden="true"><span class="octicon octicon-link"></span></a>reference resources</h1>
+
+<ul>
+<li><a href="http://developer.android.com/training/articles/security-ssl.html">http://developer.android.com/training/articles/security-ssl.html</a></li>
+<li><a href="http://ogrelab.ikratko.com/using-android-volley-with-self-signed-certificate/">http://ogrelab.ikratko.com/using-android-volley-with-self-signed-certificate/</a></li>
+<li><a href="http://stackoverflow.com/questions/2138940/import-pem-into-java-key-store">http://stackoverflow.com/questions/2138940/import-pem-into-java-key-store</a></li>
+<li><a href="http://stackoverflow.com/questions/3685548/java-keytool-easy-way-to-add-server-cert-from-url-port">http://stackoverflow.com/questions/3685548/java-keytool-easy-way-to-add-server-cert-from-url-port</a></li>
+</ul>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/suzp1984/TLSDemo/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/suzp1984/TLSDemo/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/suzp1984/TLSDemo"></a> is maintained by <a href="https://github.com/suzp1984">suzp1984</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-20256105-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
