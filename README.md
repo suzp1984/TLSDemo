@@ -121,7 +121,7 @@ SSL support server-side verification, just the reverse of the former ones, at th
 certificates are stored in the client side, and also a private key. So how to configure
 the client side to support those feature.
 
-The key point is to give the Keyanager array to the SSLContext.init method.
+The key point is to give the Keymanager array into the SSLContext.init method.
 
 ```java
     sslContext.init(new KeyManager[]{km}, tms, null);
@@ -129,7 +129,7 @@ The key point is to give the Keyanager array to the SSLContext.init method.
 
 following methods is example of generate a KeyManager from the client certificate and
 its related private key, and the factoray class, CustomKeyManagerFactory is the
-wrapper class that you can leverage.
+wrapper class that you can leverage latter.
 
 Oh, in android platform, it only support pkcs8 format private key.
 
